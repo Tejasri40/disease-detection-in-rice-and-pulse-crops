@@ -1,33 +1,48 @@
 import streamlit as st
 from PIL import Image
+from datetime import datetime
+
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Table,
+    TableStyle,
+    Image as RLImage,
+    Spacer
+)
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+
 from src.services.auth_service import AuthService
 from src.services.prediction_service import PredictionService
 from src.model_config import MODELS, get_model_path
 from auth import create_users_table
+from data.disease_info import DISEASE_INFO
 
-# Create users table
+
+# ---------------- DB INIT ----------------
 create_users_table()
-
 auth_service = AuthService()
 prediction_service = PredictionService()
 
 st.set_page_config(page_title="Crop Disease Detection", layout="wide")
 
-# ---------- SESSION STATE ----------
+
+# ---------------- SESSION ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# ---------- AUTH ----------
+
+# ---------------- AUTH ----------------
 if not st.session_state.logged_in:
     st.title("🔐 User Authentication")
 
     tab1, tab2 = st.tabs(["Login", "Register"])
 
-    # ---------- LOGIN ----------
     with tab1:
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
-
         if st.button("Login"):
             if auth_service.login(username, password):
                 st.session_state.logged_in = True
@@ -35,11 +50,9 @@ if not st.session_state.logged_in:
             else:
                 st.error("Invalid credentials")
 
-    # ---------- REGISTER ----------
     with tab2:
         new_user = st.text_input("New Username")
         new_pass = st.text_input("New Password", type="password")
-
         if st.button("Register"):
             if auth_service.register(new_user, new_pass):
                 st.success("Account created. Please login.")
@@ -48,131 +61,161 @@ if not st.session_state.logged_in:
 
     st.stop()
 
-# ---------- SIDEBAR ----------
+
+# ---------------- SIDEBAR ----------------
 st.sidebar.title("Menu")
-page = st.sidebar.radio(
-    "Select Option",
-    ["Disease Prediction", "Chatbot Assistance"]
-)
+page = st.sidebar.radio("Select Option", ["Disease Prediction", "Chatbot Assistance"])
 
 if st.sidebar.button("Logout"):
     st.session_state.logged_in = False
     st.rerun()
 
-# ---------- DISEASE PREDICTION ----------
-if page == "Disease Prediction":
 
+# ---------------- PDF FUNCTION ----------------
+def generate_pdf(image_path, label, conf):
+    file_name = "Disease_Report.pdf"
+    doc = SimpleDocTemplate(file_name, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    info = DISEASE_INFO.get(label.lower(), {})
+
+    # Title
+    elements.append(Paragraph("<b>Disease Detection Report</b>", styles["Title"]))
+    elements.append(Spacer(1, 15))
+
+    # Image
+    elements.append(RLImage(image_path, width=300, height=180))
+    elements.append(Spacer(1, 20))
+
+    # Table
+    table = Table(
+        [
+            ["Crop", info.get("crop", "N/A")],
+            ["Detected Disease", label],
+            ["Confidence", f"{conf:.2f}%"]
+        ],
+        colWidths=[150, 250]
+    )
+    table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey)
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+
+    # Description
+    elements.append(Paragraph(f"<b>Description:</b> {info.get('description', 'N/A')}", styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    # Symptoms
+    elements.append(Paragraph(f"<b>Symptoms:</b> {info.get('symptoms', 'N/A')}", styles["Normal"]))
+    elements.append(Spacer(1, 15))
+
+    # Treatment Guidance
+    elements.append(Paragraph("<b>Treatment Guidance:</b>", styles["Normal"]))
+    elements.append(Spacer(1, 8))
+    for step in info.get("treatment_guidance", []):
+        elements.append(Paragraph(f"- {step}", styles["Normal"]))
+        elements.append(Spacer(1, 6))
+
+    elements.append(Spacer(1, 15))
+
+    # Preventive Measures
+    elements.append(Paragraph("<b>Preventive Measures:</b>", styles["Normal"]))
+    elements.append(Spacer(1, 8))
+    for step in info.get("prevention", []):
+        elements.append(Paragraph(f"- {step}", styles["Normal"]))
+        elements.append(Spacer(1, 6))
+
+    elements.append(Spacer(1, 20))
+
+    # Footer
+    elements.append(
+        Paragraph(
+            f"<font size=9>Generated on: {datetime.now().strftime('%d-%m-%Y %H:%M')}</font>",
+            styles["Normal"]
+        )
+    )
+
+    doc.build(elements)
+    return file_name
+
+
+# ---------------- UI RESPONSE ----------------
+def show_curing_response(label):
+    info = DISEASE_INFO.get(label.lower())
+    if not info:
+        return
+
+    st.markdown("---")
+    st.subheader("Crop Treatment Advisory")
+
+    # Basic info
+    st.markdown(f"**🌾 Crop:** {info['crop']}")
+    st.markdown(f"**⚠️ Severity:** {info['severity']}")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Description
+    st.markdown("**📄 Description**")
+    st.write(info["description"])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Symptoms BELOW description
+    st.markdown("**🔍 Symptoms**")
+    st.write(info["symptoms"])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Treatment Guidance
+    st.markdown("### 🌱 Treatment Guidance")
+    for step in info["treatment_guidance"]:
+        st.write(f"• {step}")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Preventive Measures
+    st.markdown("### 🛡️ Preventive Measures")
+    for step in info["prevention"]:
+        st.write(f"• {step}")
+
+
+
+# ---------------- DISEASE PREDICTION ----------------
+if page == "Disease Prediction":
     st.title("🌾 Crop Disease Detection System")
 
-    uploaded = st.file_uploader("Upload Image", ["jpg", "png", "jpeg"])
+    uploaded = st.file_uploader("Upload Leaf Image", ["jpg", "png", "jpeg"])
     model_choice = st.selectbox("Select Model", MODELS.keys())
 
-    if uploaded is not None:
-        from PIL import Image
-
-    #image preview
+    if uploaded:
         image = Image.open(uploaded)
-        st.image(
-            image,
-            caption=None,
-            use_container_width=False,
-            width=200
-        )
+        st.image(image, width=220)
 
-        # Save image
         with open("temp.jpg", "wb") as f:
             f.write(uploaded.getbuffer())
 
-        # Predict Button
         if st.button("Predict Disease"):
             model_path = get_model_path(model_choice)
             label, conf = prediction_service.predict(model_path, "temp.jpg")
 
-            # Disease Result
-            st.markdown(
-                f"""
-                <div style="
-                    background-color:#e9fbe9;
-                    padding:15px;
-                    border-radius:8px;
-                    font-size:15px;
-                    font-weight:600;
-                ">
-                🦠 Disease: {label}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.success(f"🦠 Disease Detected: {label}")
+            st.info(f"🎯 Confidence: {conf:.2f}%")
 
-            st.markdown("<br>", unsafe_allow_html=True)
+            show_curing_response(label)
 
-            # Confidence Result
-            st.markdown(
-                f"""
-                <div style="
-                    background-color:#eaf3ff;
-                    padding:15px;
-                    border-radius:8px;
-                    font-size:15px;
-                    font-weight:600;
-                ">
-                🎯 Confidence: {conf:.2f}%
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            with open(generate_pdf("temp.jpg", label, conf), "rb") as pdf:
+                st.download_button(
+                    "📄 Download Report as PDF",
+                    pdf,
+                    file_name="Disease_Report.pdf",
+                    mime="application/pdf"
+                )
 
 
-# ---------- CHATBOT ASSISTANCE ----------
+# ---------------- CHATBOT ----------------
 elif page == "Chatbot Assistance":
-
     st.title("🤖 Crop AI Assistant")
-
-    # Center layout using columns
-    left, center, right = st.columns([1, 2, 1])
-
-    with center:
-        botpress_html = """
-        <script src="https://cdn.botpress.cloud/webchat/v3.5/inject.js"></script>
-
-        <style>
-          #webchat {
-            width: 100%;
-            height: 600px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
-          }
-
-          #webchat .bpWebchat {
-            position: unset;
-            width: 100%;
-            height: 100%;
-            max-height: 100%;
-          }
-
-          #webchat .bpFab {
-            display: none;
-          }
-        </style>
-
-        <div id="webchat"></div>
-
-        <script>
-          window.botpress.on("webchat:ready", () => {
-            window.botpress.open();
-          });
-
-          window.botpress.init({
-            botId: "ad6b7fa2-df6c-42c3-92ec-5c681410ba53",
-            clientId: "5d6de969-9800-4318-8252-809d1d182916",
-            selector: "#webchat",
-            configuration: {
-              themeMode: "light",
-              color: "#3276EA",
-              hideWidget: true
-            }
-          });
-        </script>
-        """
-
-        st.components.v1.html(botpress_html, height=650)
+    st.components.v1.html("<h4>Chatbot integrated here</h4>", height=500)
