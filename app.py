@@ -218,4 +218,46 @@ if page == "Disease Prediction":
 # ---------------- CHATBOT ----------------
 elif page == "Chatbot Assistance":
     st.title("🤖 Crop AI Assistant")
-    st.components.v1.html("<h4>Chatbot integrated here</h4>", height=500)
+
+    # Store chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    # Show previous messages
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
+
+    # User input
+    user_input = st.chat_input("Ask about crop diseases, symptoms, treatments...")
+
+    if user_input:
+        # Show user message
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        with st.chat_message("user"):
+            st.write(user_input)
+
+        # 🔥 Simple logic-based response
+        response = "Sorry, I couldn't understand. Try asking about a disease."
+
+        for disease, info in DISEASE_INFO.items():
+            if disease in user_input.lower():
+                response = f"""
+🌾 Crop: {info['crop']}
+
+📄 Description: {info['description']}
+
+🔍 Symptoms: {info['symptoms']}
+
+🌱 Treatment:
+- {'\n- '.join(info['treatment_guidance'])}
+
+🛡️ Prevention:
+- {'\n- '.join(info['prevention'])}
+"""
+                break
+
+        # Show bot response
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.write(response)
