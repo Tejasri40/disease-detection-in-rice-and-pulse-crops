@@ -1,165 +1,86 @@
-**Installation**
+📌 Project Title
 
-**Create a virtual environment:**
+Crop AI Assistant – Smart Crop Disease Detection & Advisory System
+
+📖 Overview
+
+The Crop AI Assistant is an intelligent web-based application developed using Streamlit that helps farmers and users detect crop diseases from leaf images and provides treatment recommendations.
+
+The system integrates Machine Learning (PyTorch models) with a user-friendly interface to deliver accurate disease predictions along with detailed guidance such as symptoms, treatment methods, and preventive measures.
+
+In addition, the application includes a chatbot assistant that allows users to interact and get instant information about crop diseases.
+
+🚀 Features
+🌾 Crop Disease Detection
+Upload a leaf image and predict the disease using trained ML models.
+🎯 Prediction Confidence
+Displays how accurate the prediction is.
+📄 Automated PDF Report
+Generates a downloadable report including:
+Detected disease
+Symptoms
+Treatment guidance
+Preventive measures
+🤖 Chatbot Assistance
+Interactive chatbot to answer queries related to crop diseases.
+🔐 User Authentication
+Secure login and registration system.
+📊 Multiple Model Support
+Users can select different trained models for prediction.
+🛠️ Tech Stack
+Frontend & Backend: Streamlit
+Machine Learning: PyTorch
+Image Processing: PIL (Python Imaging Library)
+PDF Generation: ReportLab
+Database: SQLite (for user authentication)
+Language: Python
+🧠 How It Works
+User logs into the system
+Uploads a crop leaf image
+Selects a prediction model
+System processes the image using a trained ML model
+Displays:
+Disease name
+Confidence score
+Treatment & prevention details
+User can download a PDF report
+Chatbot provides additional assistance
+📂 Project Structure
+crop_pulse_disease_project/
+│
+├── app.py
+├── auth.py
+├── src/
+│   ├── predict.py
+│   ├── model_config.py
+│   └── services/
+│       ├── auth_service.py
+│       └── prediction_service.py
+│
+├── data/
+│   └── disease_info.py
+│
+├── models/
+├── requirements.txt
+└── README.md
+▶️ How to Run
+git clone <your-repo-link>
+cd crop_pulse_disease_project
 
 python -m venv venv
-
-source venv/bin/activate
-
-**On Windows:** venv\Scripts\activate
-
-**Install dependencies:**
+venv\Scripts\activate   # Windows
 
 pip install -r requirements.txt
 
-**Running the Application**
-
 streamlit run app.py
-
-**Model Training & Testing**
-
-This milestone focuses on training and testing deep learning models for crop disease detection using image datasets. Two separate models were trained for Rice and Pulse (Bean) crops using Convolutional Neural Networks (ResNet-18).
-
-**Datasets Used**
-
-Pulse Dataset
-bean_rust, healthy, leaf_spot
-
-Number of classes: 3
-
-Rice Dataset
-blast, blight, tungro
-
-Number of classes: 3
-
-**Training Process**
-
-Dataset loaded using ImageFolder Data split into training and validation sets Model trained for multiple epochs Validation accuracy monitored at each epoch Best performing model saved
-
-**Sample training output:**
-
-Epoch 1/20
-
-Train Loss: 10.46 | Train Acc: 71.05%
-
-Val Loss: 10.16 | Val Acc: 52.08%
-
-✓ Best model saved!
-
-**Model Testing**
-
-Trained models were tested using validation data Class predictions and confidence scores verified Model performance confirmed before deployment
-
-**Sample Output**
-
-Loading trained model...
-
-Model loaded successfully
-
-Classes: ['blast', 'blight', 'tungro']
-
-Testing multiple images...
-
-Image: blast_001.jpg
-
-Prediction: blast (99.75%)
-
-**Outcome**
-
-Successfully trained Rice and Pulse disease detection models Verified prediction accuracy on validation data Saved best-performing models for deployment Prepared models for integration with Streamlit application
-
-**SOLID PRICIPLES**
-
-**1) Single Responsibilty Principle (SRP)**
-
-Each module in the project has only one responsibility.
-
-app.py – User Interface (Streamlit)
-
-predict.py – Image preprocessing and prediction
-
-train_model.py – Model training
-
-auth_service.py – Authentication logic
-
-database.py – Database operations
-
-model_config.py – Model path configuration
-
-
-
-
-**2) Open/Closed Principle (OCP)**
-
-The system is open for extension but closed for modification.
-
-- New crops or models can be added in **model_config.py**
- 
-- Existing prediction logic does not need to be changed
-
-Example:
-
-MODELS = {
-
-    "Rice": "models/rice_model.pth",
-    
-    "Pulse": "models/pulse_model.pth"
-    
-}
-
-
-**3) Liskov Substitution Principle (LSP)**
-
-All crop models are interchangeable during prediction.
-
-Rice model and Pulse model follow the same structure
-
-Prediction works with any valid model path
-
-prediction_service.predict(model_path, image)
-
-
-**4) Interface Segregation Principle (ISP)**
-
-Interfaces are small and focused.
-
-The prediction interface contains only required methods (like predict).
-
-Clients (UI in app.py) depend only on the methods they use.
-
-Unnecessary methods are avoided in interfaces.
-
-**Interfaces:**
-
-auth_interface.py
-
-prediction_interface.py
-
-**Implementations:**
-
-auth_service.py
-
-prediction_service.py
-
-
-
-**5) Dependency Inversion Principle (DIP)**
-
-High-level modules(app.py) do not depend on low-level modules directly.
-
-Both depend on abstractions(interfaces)
-
-Dependencies are provided using a service method (for example: get_prediction_service())
-
-
-
-
-
-
-
-
-
-
-
-
-
+🎯 Use Cases
+Farmers for early disease detection
+Agriculture students for learning
+Researchers for crop analysis
+Agri-tech solutions
+🌟 Future Enhancements
+AI-powered chatbot (ChatGPT integration)
+Multi-language support (Telugu, Hindi, etc.)
+Mobile app version
+Real-time camera detection
+Cloud deployment
