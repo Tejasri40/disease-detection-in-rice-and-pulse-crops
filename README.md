@@ -74,14 +74,16 @@ pip install -r requirements.txt
 
 streamlit run app.py
 
-## 🎯 Use Cases
+---
+
+**##** 🎯 Use Cases
 
 - Farmers for early disease detection  
 - Agriculture students for learning purposes  
 - Researchers for crop disease analysis  
 - Agri-tech platforms for smart farming solutions
 
-## 🌟 Future Enhancements
+**## **🌟 Future Enhancements
 
 - AI-powered chatbot integration  
 - Multi-language support (Telugu, Hindi, etc.)  
