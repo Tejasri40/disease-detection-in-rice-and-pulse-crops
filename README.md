@@ -77,3 +77,24 @@ streamlit run app.py
 
 
 
+## 🎯 Use Cases
+
+Farmers can detect crop diseases early and take action
+Agriculture students can use it for learning
+Researchers can improve disease prediction models
+Agri-tech platforms can integrate this system
+Field workers can assist farmers quickly
+
+## 🌟 Future Enhancements
+
+🌍 Multi-language support (Telugu, Hindi, etc.)
+📱 Mobile application
+📷 Real-time detection using camera
+☁️ Cloud deployment
+🤖 Advanced AI chatbot integration
+
+
+
+
+
+
