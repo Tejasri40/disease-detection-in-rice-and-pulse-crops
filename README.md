@@ -73,3 +73,18 @@ venv\Scripts\activate   # Windows
 pip install -r requirements.txt
 
 streamlit run app.py
+
+## 🎯 Use Cases
+
+- Farmers for early disease detection  
+- Agriculture students for learning purposes  
+- Researchers for crop disease analysis  
+- Agri-tech platforms for smart farming solutions
+
+## 🌟 Future Enhancements
+
+- AI-powered chatbot integration  
+- Multi-language support (Telugu, Hindi, etc.)  
+- Mobile application version  
+- Real-time camera-based disease detection  
+- Cloud deployment for scalability  
